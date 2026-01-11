@@ -1,5 +1,8 @@
 build/
 bin/
 .vscode/
+.cache/
 
 .test*
+
+imgui.ini

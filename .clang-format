@@ -1,0 +1,40 @@
+# .clang-format 文件示例 (将此文件放在你的项目根目录)
+Language: Cpp
+BasedOnStyle: Microsoft
+IndentWidth: 4
+ColumnLimit: 66
+# 不对头文件排序, 引入顺序会影响代码
+SortIncludes: false
+
+Cpp11BracedListStyle: true
+
+# public 等访问修饰符的缩进
+AccessModifierOffset: -4
+# 短函数放在一行 Empty: 仅为空函数; All: 所有短函数; InlineOnly: 仅内联函数
+AllowShortFunctionsOnASingleLine: Empty
+# 首个参数另起一行
+AlignAfterOpenBracket: BlockIndent
+# 当函数声明参数过多导致换行时，控制它们是否可以紧密打包
+BinPackParameters: false
+# 当函数调用参数过多导致换行时，控制它们是否可以紧密打包
+BinPackArguments: false
+# AlignConsecutiveAssignments: AcrossEmptyLinesAndComments
+# AlignConsecutiveDeclarations: AcrossEmptyLinesAndComments
+BreakBeforeBraces: Allman
+
+# 控制二元运算符（如 +, -, *, /, &&, ||）换行时是放在行首还是行尾
+# BreakBeforeBinaryOperators: All
+
+# 括号内是否添加空格
+SpacesInParentheses: false
+# 方括号内是否添加空格
+SpacesInSquareBrackets: false
+# Left: int* p; Right: int *p; Middle: int * p;
+PointerAlignment: Left
+# 当命名空间只有一个内容时，是否将其放在一行
+CompactNamespaces: true
+
+# 行尾注释 // comment 前的空格数
+SpacesBeforeTrailingComments: 2
+# 尖括号 <> 内是否添加空格 (常用于模板)
+SpacesInAngles: false
