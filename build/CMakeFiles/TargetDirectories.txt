@@ -1,0 +1,8 @@
+/home/feng/Projects/myapp/build/CMakeFiles/myapp.dir
+/home/feng/Projects/myapp/build/CMakeFiles/edit_cache.dir
+/home/feng/Projects/myapp/build/CMakeFiles/rebuild_cache.dir
+/home/feng/Projects/myapp/build/vendored/SDL/CMakeFiles/SDL3-shared.dir
+/home/feng/Projects/myapp/build/vendored/SDL/CMakeFiles/SDL3_test.dir
+/home/feng/Projects/myapp/build/vendored/SDL/CMakeFiles/SDL_uclibc.dir
+/home/feng/Projects/myapp/build/vendored/SDL/CMakeFiles/edit_cache.dir
+/home/feng/Projects/myapp/build/vendored/SDL/CMakeFiles/rebuild_cache.dir

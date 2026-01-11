@@ -1,0 +1,1 @@
+/usr/bin/c++ CMakeFiles/myapp.dir/app.cpp.o -o bin/myapp  -Wl,-rpath,/home/feng/Projects/myapp/build/lib lib/libSDL3.so.0.5.0 
