@@ -9,6 +9,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib")
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib")
 
+set(CMAKE_CXX_STANDARD 20)
 set(PROJECT_NAME myapp)
 project(${PROJECT_NAME} C CXX)
 
@@ -89,7 +90,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE imgui Vulkan::Vulkan)
 # >>>>>>>>>>>>>>>> UI source (ImGui)
 add_library(ui
     "src/ui/manager.cpp"
-    "src/ui/window.cpp"
+    # "src/ui/window.cpp"
     "src/ui/note.cpp"
 )
 # 链接全局头文件

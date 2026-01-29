@@ -16,8 +16,12 @@ inline constexpr const char* MAIN_WINDOW_NAME = "Main Window";
 
 inline std::vector<std::unique_ptr<Window>> window_list;
 
-void operation_before_main_loop();
-void render();
+void
+operation_before_main_loop();
+
+void
+render();
+
 }  // namespace UI
 
 #endif

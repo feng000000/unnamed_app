@@ -9,7 +9,9 @@
 #include "ui/window.h"
 #include "ui/note.h"
 
-inline void set_dock_layout(ImGuiID dockspace_id)
+
+inline void
+set_dock_layout(ImGuiID dockspace_id)
 {
     std::cout << "adjust dock layout" << std::endl;
 
@@ -43,7 +45,8 @@ inline void set_dock_layout(ImGuiID dockspace_id)
 }
 
 // TODO: submission_dockspace: remove unnecessary code
-inline ImGuiID submission_dockspace()
+inline ImGuiID
+submission_dockspace()
 {
     static bool opt_fullscreen = true;
     static bool opt_padding = false;
@@ -82,9 +85,7 @@ inline ImGuiID submission_dockspace()
     // pass-thru hole, so we ask Begin() to not render a
     // background.
     if (dockspace_flags & ImGuiDockNodeFlags_PassthruCentralNode)
-    {
         window_flags |= ImGuiWindowFlags_NoBackground;
-    }
 
     // Important: note that we proceed even if Begin() returns
     // false (aka window is collapsed). This is because we want to
@@ -106,14 +107,10 @@ inline ImGuiID submission_dockspace()
         UI::DOCK_SPACE_WINDOW_NAME, nullptr, window_flags
     );
     if (!opt_padding)
-    {
         ImGui::PopStyleVar();
-    }
 
     if (opt_fullscreen)
-    {
         ImGui::PopStyleVar(2);
-    }
 
     ImGuiIO& io = ImGui::GetIO();
 
@@ -163,18 +160,14 @@ inline ImGuiID submission_dockspace()
                     (dockspace_flags &
                      ImGuiDockNodeFlags_NoUndocking) != 0
                 ))
-            {
                 dockspace_flags ^= ImGuiDockNodeFlags_NoUndocking;
-            }
             if (ImGui::MenuItem(
                     "Flag: NoResize",
                     "",
                     (dockspace_flags & ImGuiDockNodeFlags_NoResize
                     ) != 0
                 ))
-            {
                 dockspace_flags ^= ImGuiDockNodeFlags_NoResize;
-            }
             if (ImGui::MenuItem(
                     "Flag: AutoHideTabBar",
                     "",
@@ -257,16 +250,24 @@ inline ImGuiID submission_dockspace()
     return dockspace_id;
 }
 
-void UI::operation_before_main_loop() {}
+void
+UI::operation_before_main_loop()
+{
+}
 
-void UI::render()
+void
+UI::render()
 {
     auto dockspace_id = submission_dockspace();
 
     window_list = std::vector<std::unique_ptr<Window>>();
+    ImGuiWindowFlags content_window_flags =
+        ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
     UI::window_list.emplace_back(
         std::make_unique<Note::NoteWindow>(
-            "note", true, Note::NoteContent()
+            "note",
+            true,
+            std::make_shared<Note::NoteContent>("data", content_window_flags)
         )
     );
 
@@ -275,7 +276,7 @@ void UI::render()
         if (!window->is_showing())
             continue;
 
-        window->show(dockspace_id);
+        window->update(dockspace_id);
     }
 
     UI::FIRST_TIME = false;

@@ -6,10 +6,14 @@
 namespace UI
 {
 
+
 class Window
 {
 public:
+    const char* name;
+    ImGuiID id = -1;
     ImGuiWindowFlags flags = ImGuiWindowFlags_NoTitleBar;
+
     Window(const char* name, bool showing)
         : name(name), showing(showing)
     {
@@ -17,15 +21,22 @@ public:
 
     virtual ~Window() = default;
 
-    virtual bool show(ImGuiID dock_node_id) = 0;
+    virtual bool update(ImGuiID dock_node_id) = 0;
 
-    // void show();
-    bool is_showing();
-    void hide();
+    void show()
+    {
+        showing = true;
+    }
+    bool is_showing()
+    {
+        return showing;
+    }
+    void hide()
+    {
+        showing = false;
+    }
 
 protected:
-    const char* name;
-    ImGuiID id = -1;
     bool showing;
 };
 

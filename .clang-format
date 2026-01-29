@@ -38,3 +38,16 @@ CompactNamespaces: true
 SpacesBeforeTrailingComments: 2
 # 尖括号 <> 内是否添加空格 (常用于模板)
 SpacesInAngles: false
+
+# 如果 if/for 块内只有一条语句，可以自动移除 {}
+RemoveBracesLLVM: true
+# 将短的 if 语句放在同一行, (Never, WithoutElse, Always)
+# AllowShortIfStatementsOnASingleLine: WithoutElse
+
+
+SeparateDefinitionBlocks: Always
+
+# 最大连续空行数
+# MaxEmptyLinesToKeep: 2
+
+AlwaysBreakAfterReturnType: All
