@@ -3,7 +3,7 @@
 
 #include "imgui.h"
 
-namespace UI
+namespace ui
 {
 
 
@@ -40,6 +40,6 @@ protected:
     bool showing;
 };
 
-}  // namespace UI
+}  // namespace ui
 
 #endif

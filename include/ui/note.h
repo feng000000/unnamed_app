@@ -9,7 +9,7 @@
 #include "imgui.h"
 #include "ui/window.h"
 
-namespace UI::Note
+namespace ui::note
 {
 
 // content block type
@@ -81,6 +81,6 @@ protected:
     std::shared_ptr<NoteContent> data;
 };
 
-};  // namespace UI::Note
+};  // namespace ui::Note
 
 #endif

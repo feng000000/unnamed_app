@@ -679,7 +679,7 @@ int main(int, char**)
     // Our state
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
-    UI::operation_before_main_loop();
+    auto ctx = ui::get_context();
 
     // Main loop
     bool done = false;
@@ -749,7 +749,7 @@ int main(int, char**)
         ImGui_ImplSDL3_NewFrame();
         ImGui::NewFrame();
 
-        UI::render();
+        ui::render();
 
         // Rendering
         ImGui::Render();

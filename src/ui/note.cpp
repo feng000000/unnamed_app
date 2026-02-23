@@ -1,23 +1,23 @@
 #include <cmath>
-#include <iostream>
 #include <memory>
 #include <sys/types.h>
 #include <utility>
 
 #include "imgui.h"
 #include "imgui_internal.h"
+#include "spdlog/spdlog.h"
 
 #include "ui/manager.h"
 #include "ui/note.h"
-#include "ui/utils.h"
+#include "ui/utils.hpp"
 
-using namespace UI::Note;
-using namespace UI::Utils;
+using namespace ui::note;
+using namespace ui::utils;
 
 inline void
 set_dock_layout(const char* name, ImGuiID dockspace_id)
 {
-    std::cout << "adjust dock layout" << std::endl;
+    spdlog::debug("adjust dock layout");
 
     ImGui::DockBuilderRemoveNode(dockspace_id);
     ImGui::DockBuilderAddNode(
@@ -27,9 +27,10 @@ set_dock_layout(const char* name, ImGuiID dockspace_id)
         dockspace_id, ImGui::GetMainViewport()->Size
     );
 
-    ImGuiID dock_id = ImGui::DockBuilderSplitNode(
-        dockspace_id, ImGuiDir_Right, 0.5f, nullptr, nullptr
-    );
+    // ImGuiID dock_id = ImGui::DockBuilderSplitNode(
+    //     dockspace_id, ImGuiDir_Right, 0.5f, nullptr, nullptr
+    // );
+    ImGuiID dock_id = dockspace_id;
 
     ImGuiDockNode* node = ImGui::DockBuilderGetNode(dock_id);
     node->LocalFlags |= ImGuiDockNodeFlags_NoTabBar;
@@ -141,14 +142,11 @@ bool
 NoteWindow::update(ImGuiID dock_node_id)
 {
     if (!this->showing)
-        return true;
-    ;
+        return false;
 
-    if (UI::FIRST_TIME)
+    if (ui::FIRST_TIME)
     {
         set_dock_layout(name, dock_node_id);
-
-        // DEBUG:
     }
 
     if (ImGui::Begin(name, &(this->showing), flags))
@@ -158,7 +156,7 @@ NoteWindow::update(ImGuiID dock_node_id)
         ImGui::Text("this is Note Window");
 
         if (ImGui::Button("note window button"))
-            std::cout << "click note window button" << std::endl;
+            spdlog::debug("click note window button");
 
         ImGui::End();
 

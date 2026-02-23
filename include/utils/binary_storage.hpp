@@ -7,7 +7,7 @@
 #include <vector>
 #include <vulkan/vulkan_core.h>
 
-namespace BinaryStorage
+namespace utils::BinaryStorage
 {
 using byte = unsigned char;
 

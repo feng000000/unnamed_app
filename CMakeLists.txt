@@ -64,7 +64,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE SDL3::SDL3)
 # SDL3 <<<<<<<<<<<<<<<<
 
 
-# >>>>>>>>>>>>>>>> ImGui (SDL3)
+# >>>>>>>>>>>>>>>> ImGui (depnds SDL3)
 add_library(imgui STATIC
 # add_library(imgui SHARED
     vendored/imgui/imgui.cpp
@@ -87,17 +87,21 @@ target_link_libraries(${PROJECT_NAME} PRIVATE imgui Vulkan::Vulkan)
 
 
 
-# >>>>>>>>>>>>>>>> UI source (ImGui)
-add_library(ui
+# >>>>>>>>>>>>>>>> Project Source (depnds ImGui)
+add_library(proj_source
     "src/ui/manager.cpp"
     # "src/ui/window.cpp"
     "src/ui/note.cpp"
+    "src/ui/calendar.cpp"
+
+    "src/core/core_loop.cpp"
+
 )
 # 链接全局头文件
-target_link_libraries(ui PRIVATE imgui)
-target_link_libraries(ui PUBLIC project_headers)
-target_link_libraries(${PROJECT_NAME} PRIVATE ui)
-# UI <<<<<<<<<<<<<<<<
+target_link_libraries(proj_source PRIVATE imgui)
+target_link_libraries(proj_source PUBLIC project_headers)
+target_link_libraries(${PROJECT_NAME} PRIVATE proj_source)
+# Project Source <<<<<<<<<<<<<<<<
 
 
 # >>>>>>>>>>>>>>>> Compile Settings

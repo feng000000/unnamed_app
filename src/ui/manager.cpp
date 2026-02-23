@@ -1,14 +1,19 @@
 #include <iostream>
 #include <memory>
 #include <vector>
+#include <thread>
 
 #include "imgui.h"
 #include "imgui_internal.h"
+#include "spdlog/common.h"
+#include "spdlog/spdlog.h"
 
 #include "ui/manager.h"
 #include "ui/window.h"
 #include "ui/note.h"
-
+#include "ui/calendar.h"
+#include "core/core_loop.h"
+#include "utils/context.hpp"
 
 inline void
 set_dock_layout(ImGuiID dockspace_id)
@@ -37,7 +42,7 @@ set_dock_layout(ImGuiID dockspace_id)
     // 3. 关键：指定 "main window" 停靠在右侧区域
     ImGui::DockBuilderDockWindow("placeholder", dock_id_left);
     ImGui::DockBuilderDockWindow(
-        UI::MAIN_WINDOW_NAME, dock_id_right
+        ui::MAIN_WINDOW_NAME, dock_id_right
     );
 
     // 4. 完成构建
@@ -52,7 +57,7 @@ submission_dockspace()
     static bool opt_padding = false;
     static ImGuiDockNodeFlags dockspace_flags =
         ImGuiDockNodeFlags_None;
-    ImGuiID dockspace_id = ImGui::GetID(UI::DOCK_SPACE_NAME);
+    ImGuiID dockspace_id = ImGui::GetID(ui::DOCK_SPACE_NAME);
 
     // We are using the ImGuiWindowFlags_NoDocking flag to make
     // the parent window not dockable into, because it would be
@@ -104,7 +109,7 @@ submission_dockspace()
     }
 
     ImGui::Begin(
-        UI::DOCK_SPACE_WINDOW_NAME, nullptr, window_flags
+        ui::DOCK_SPACE_WINDOW_NAME, nullptr, window_flags
     );
     if (!opt_padding)
         ImGui::PopStyleVar();
@@ -250,34 +255,65 @@ submission_dockspace()
     return dockspace_id;
 }
 
-void
-UI::operation_before_main_loop()
+// app lifespan (RAII)
+utils::ctx::Context
+ui::get_context()
 {
+    utils::ctx::Context ctx("app context");
+    ctx.push_enter_func(
+        []()
+        {
+            auto log_level = spdlog::level::debug;
+            spdlog::set_level(log_level);
+            spdlog::info(
+                "log level: {}", static_cast<int>(log_level)
+            );
+        }
+    );
+    ctx.push_enter_func(
+        []()
+        {
+            std::thread core_loop_thread(core::core_loop);
+            core_loop_thread.detach();
+        }
+    );
+    ctx.push_exit_func([]() { core::stop(); });
+
+    ctx.enter();
+
+    return std::move(ctx);
 }
 
 void
-UI::render()
+ui::render()
 {
     auto dockspace_id = submission_dockspace();
 
     window_list = std::vector<std::unique_ptr<Window>>();
+
     ImGuiWindowFlags content_window_flags =
         ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
-    UI::window_list.emplace_back(
-        std::make_unique<Note::NoteWindow>(
-            "note",
-            true,
-            std::make_shared<Note::NoteContent>("data", content_window_flags)
+
+    // DEBUG: test NoteWindow
+    // ui::window_list.emplace_back(
+    //     std::make_unique<note::NoteWindow>(
+    //         "note",
+    //         true,
+    //         std::make_shared<note::NoteContent>(
+    //             "data", content_window_flags
+    //         )
+    //     )
+    // );
+
+    // DEBUG: test CalendarWindow
+    ui::window_list.emplace_back(
+        std::make_unique<calendar::CalendarWindow>(
+            "calendar", true
         )
     );
 
-    for (auto& window : UI::window_list)
-    {
-        if (!window->is_showing())
-            continue;
-
+    for (auto& window : ui::window_list)
         window->update(dockspace_id);
-    }
 
-    UI::FIRST_TIME = false;
+    ui::FIRST_TIME = false;
 }

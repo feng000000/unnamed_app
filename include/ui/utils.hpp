@@ -3,7 +3,7 @@
 
 #include <atomic>
 
-namespace UI::Utils
+namespace ui::utils
 {
 
 // get a uint64_t id, it will incrementally generated in a circle
@@ -15,6 +15,6 @@ gen_id()
     return _ID_COUNTER++;
 }
 
-}  // namespace UI::Utils
+}  // namespace ui::Utils
 
 #endif

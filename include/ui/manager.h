@@ -5,8 +5,9 @@
 #include <memory>
 
 #include "ui/window.h"
+#include "utils/context.hpp"
 
-namespace UI
+namespace ui
 {
 inline bool FIRST_TIME = true;
 inline constexpr const char* DOCK_SPACE_WINDOW_NAME =
@@ -16,12 +17,12 @@ inline constexpr const char* MAIN_WINDOW_NAME = "Main Window";
 
 inline std::vector<std::unique_ptr<Window>> window_list;
 
-void
-operation_before_main_loop();
+
+utils::ctx::Context get_context();
 
 void
 render();
 
-}  // namespace UI
+}  // namespace ui
 
 #endif
