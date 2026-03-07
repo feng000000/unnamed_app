@@ -26,6 +26,7 @@
 #include <stdlib.h>  // abort
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_vulkan.h>
+#include <unistd.h>
 
 // This example doesn't compile with Emscripten yet! Awaiting SDL3
 // support.
@@ -529,7 +530,7 @@ int main(int, char**)
         SDL_WINDOW_VULKAN | SDL_WINDOW_RESIZABLE |
         SDL_WINDOW_HIDDEN | SDL_WINDOW_HIGH_PIXEL_DENSITY;
     SDL_Window* window = SDL_CreateWindow(
-        "Dear ImGui SDL3+Vulkan example",
+        "My Application",
         (int)(1280 * main_scale),
         (int)(800 * main_scale),
         window_flags

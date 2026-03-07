@@ -3,37 +3,37 @@
 
 #include <functional>
 #include <stdbool.h>
+#include <vector>
 
 #include "spdlog/spdlog.h"
 
 namespace utils::ctx
 {
-using TaskStack = std::vector<std::function<void()>>;
+using TaskList = std::vector<std::function<void()>>;
 
 class Context
 {
 public:
-    // 1. 构造函数：获取资源
     explicit Context(const char* name) : ctx_name(name)
     {
         spdlog::debug("[Context] Created: {}", ctx_name);
     }
 
-    // 2. 析构函数：RAII 释放资源
     ~Context()
     {
         if (this->handle)
         {
-            spdlog::debug("[Context] Destroyed: {}", ctx_name);
+            // 释放资源
             this->exit();
+            spdlog::debug("[Context] Destroyed: {}", ctx_name);
         }
     }
 
     // 移动构造
     Context(Context&& other) noexcept : ctx_name(other.ctx_name)
     {
+        this->handle = other.handle;
         other.handle = false;
-        this->handle = true;
         spdlog::debug("[Context] Moved: {}", ctx_name);
     }
 
@@ -43,8 +43,8 @@ public:
     {
         if (this != &other)
         {
+            this->handle = other.handle;
             other.handle = false;
-            this->handle = true;
 
             ctx_name = other.ctx_name;
             spdlog::debug("[Context] Moved: {}", ctx_name);
@@ -59,28 +59,29 @@ public:
     Context&
     operator=(const Context&) = delete;
 
-    // 注册 退出上下文函数
+    // 注册 退出上下文函数 FIFO
     void
     push_exit_func(std::function<void()> func)
     {
         spdlog::debug("register exit_func");
-        exit_stack.push_back(func);
+        exit_list.push_back(func);
     }
 
-    // 注册 进入上下文函数
+    // 注册 进入上下文函数, FIFO
     void
     push_enter_func(std::function<void()> func)
     {
         spdlog::debug("register enter_func");
-        enter_stack.push_back(func);
+        enter_list.push_back(func);
     }
 
     // 进入上下文
     void
     enter() noexcept
     {
+        handle = true;
         spdlog::debug("[Context] enter context {}", ctx_name);
-        execute_func_stack("enter", enter_stack);
+        execute_func_list("enter", enter_list);
     }
 
 protected:
@@ -88,29 +89,29 @@ protected:
     void
     exit() noexcept
     {
-        execute_func_stack("exit", exit_stack);
         this->handle = false;
+        execute_func_list("exit", exit_list);
+        spdlog::debug("[Context] exit context {}", ctx_name);
     }
 
 private:
     bool handle = false;
     const char* ctx_name;
-    TaskStack enter_stack;
-    TaskStack exit_stack;
+    TaskList enter_list;
+    TaskList exit_list;
 
     void
-    execute_func_stack(
-        const char* identify, TaskStack& stack
+    execute_func_list(
+        const char* identify, TaskList& task_list
     ) noexcept
     {
-        while (!stack.empty())
+        for (auto& func : task_list)
         {
-            if (!stack.back())
+            if (!func)
                 continue;
             try
             {
-                stack.back()();
-                stack.pop_back();
+                func();
             }
             catch (const std::exception e)
             {

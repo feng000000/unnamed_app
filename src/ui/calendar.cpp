@@ -1,3 +1,8 @@
+#include <cstddef>
+#include <cstdint>
+#include <mutex>
+#include <string>
+#include <ctime>
 
 #include "imgui.h"
 #include "imgui_internal.h"
@@ -6,9 +11,77 @@
 #include "ui/calendar.h"
 #include "ui/window.h"
 #include "ui/manager.h"
-#include <string>
 
-using namespace ui::calendar;
+namespace ui::calendar
+{
+static std::mutex now_mtx;
+static DateTime NOW;
+
+void
+update_now_datetime()
+{
+    static double lastupdate = 0;
+
+    if (lastupdate && ImGui::GetTime() - lastupdate < 1)
+        return;
+
+    spdlog::debug("lastupdate: {}", lastupdate);
+
+    time_t now = time(nullptr);
+    struct tm local_tm;
+#ifdef _WIN32
+    localtime_s(&local_tm, &now);
+#else
+    localtime_r(&now, &local_tm);
+#endif
+
+    std::lock_guard<std::mutex> lock(now_mtx);
+    NOW = DateTime{
+        .timestamp_s = now,
+        .year = static_cast<uint16_t>(1900 + local_tm.tm_year),
+        .month = static_cast<uint8_t>(1 + local_tm.tm_mon),
+        .day = static_cast<uint8_t>(local_tm.tm_mday),
+        .week =
+            static_cast<uint8_t>((local_tm.tm_wday + 6) % 7 + 1),
+        .hour = static_cast<uint8_t>(local_tm.tm_hour),
+        .minute = static_cast<uint8_t>(local_tm.tm_min),
+        .second = static_cast<uint8_t>(local_tm.tm_sec),
+    };
+    lastupdate = ImGui::GetTime();
+}
+
+DateTime
+get_now_datetime()
+{
+    std::lock_guard<std::mutex> lock(now_mtx);
+    return NOW;
+}
+
+// 获取当前年月份的天数
+inline int
+get_days_in_month(int year, int month)
+{
+    static constexpr int days_in_month[12] = {
+        31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+
+    if (month == 2 &&
+        ((year % 4 == 0 && year % 100 != 0) || (year % 400 == 0)))
+        return 29;
+    return days_in_month[month - 1];
+}
+
+// 获取当前月份第一天是周几 (1-7, start at Monday)
+inline int
+get_first_week_day(int year, int month)
+{
+    struct tm tm_info = {};
+    tm_info.tm_year = year - 1900;
+    tm_info.tm_mon = month - 1;
+    tm_info.tm_mday = 1;
+    mktime(&tm_info);
+
+    return (tm_info.tm_wday + 6) % 7 + 1;
+}
 
 CalendarWindow::CalendarWindow(const char* name, bool showing)
     : Window(name, showing)
@@ -43,15 +116,13 @@ set_dock_layout(const char* name, ImGuiID dockspace_id)
 }
 
 void
-draw_day_text(int day)
+draw_day_text(int day, int today)
 {
     std::string day_text = std::to_string(day);
 
-    // TODO: check day != current day
-
     ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 6.0f);
     ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 6.0f);
-    if (day != 9)
+    if (day != today)
     {
         ImGui::TextDisabled("%s", day_text.c_str());
         return;
@@ -97,7 +168,6 @@ void
 draw_day_event(int day)
 {
     spdlog::error("draw_day_event is not implemented yet");
-
     // --- 在方格内显示多行标题 ---
     // // 模拟该日期下的多个事件
     // static std::vector<std::pair<const char*, ImVec4>>
@@ -122,6 +192,67 @@ draw_day_event(int day)
     // ImGui::EndGroup();
 }
 
+// 渲染表头 (星期)
+inline void
+render_header(float height)
+{
+    for (int i = 0; i < 7; i++)
+        ImGui::TableSetupColumn(CalendarWindow::week_title[i]);
+
+    ImGui::TableNextRow(ImGuiTableRowFlags_Headers, height);
+    for (int i = 0; i < 7; i++)
+    {
+        ImGui::TableNextColumn();
+        ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 6.0f);
+        ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 8.0f);
+        ImGui::TableHeader(CalendarWindow::week_title[i]);
+    }
+}
+
+inline void
+render_cell(int day, int today, int col_idx, float cell_height)
+{
+    ImGui::TableNextColumn();
+
+    // 设置当前行的高度
+    float start_y = ImGui::GetCursorPosY();
+
+    if (day > 0)
+        draw_day_text(day, today);
+    draw_day_event(day);
+
+    // 确保每个方格有最小高度（填充剩余空间）
+    float current_y = ImGui::GetCursorPosY();
+    if (current_y - start_y < cell_height)
+    {
+        ImGui::Dummy(
+            ImVec2(0, cell_height - (current_y - start_y))
+        );
+    }
+
+    if (day <= 0)
+    {
+        spdlog::debug("skip render cell");
+        return;
+    }
+
+    // highlight
+    ImRect cell_rect = ImGui::TableGetCellBgRect(
+        ImGui::GetCurrentTable(), col_idx
+    );
+    // 检查鼠标是否在刚才获取的单元格矩形内
+    if (ImGui::IsMouseHoveringRect(cell_rect.Min, cell_rect.Max))
+    {
+        spdlog::debug("mouse in the day {}", day);
+        ImU32 hover_color = IM_COL32(128, 128, 128, 50);
+
+        // 在最上层绘制一个覆盖整个单元格的矩形
+        ImGui::GetWindowDrawList()->AddRectFilled(
+            cell_rect.Min, cell_rect.Max, hover_color
+        );
+    }
+}
+
 bool
 CalendarWindow::update(ImGuiID dock_node_id)
 {
@@ -129,90 +260,62 @@ CalendarWindow::update(ImGuiID dock_node_id)
         return true;
 
     if (ui::FIRST_TIME)
+    {
         set_dock_layout(name, dock_node_id);
+        update_now_datetime();
+    }
+
+    auto date = get_now_datetime();
 
     ImGui::Begin(name);
-
-    float header_height = 25.0f;
-    auto avail_size = ImGui::GetContentRegionAvail();
-    float cell_height =
-        (avail_size[1] - header_height - 20.0f) / 5;
-
     ImGui::PushStyleVar(ImGuiStyleVar_CellPadding, ImVec2(0, 0));
+
     // 设置 Table：7列，带边框
     if (ImGui::BeginTable(
-            "CalendarTable",
-            7,
-            ImGuiTableFlags_Borders
+            "CalendarTable", 7, ImGuiTableFlags_Borders
         ))
     {
+        float header_height = 25.0f;
+        // ImVec2 avail_size = ImGui::GetContentRegionAvail();
+        ImVec2 avail_size_max =
+            ImGui::GetWindowContentRegionMax();
+        ImVec2 avail_size_min =
+            ImGui::GetWindowContentRegionMin();
+        float avail_height = avail_size_max.y - avail_size_min.y;
 
-        // 1. 渲染表头 (星期)
-        for (int i = 0; i < 7; i++)
-            ImGui::TableSetupColumn(week_title[i]);
+        // 高度设置为能显示五行
+        float cell_height =
+            (avail_height - header_height - 20.0f) / 5;
 
-        ImGui::TableNextRow(ImGuiTableRowFlags_Headers, 20.0f);
-        for (int i = 0; i < 7; i++)
-        {
-            ImGui::TableNextColumn();
-            ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 6.0f);
-            ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 8.0f);
-            ImGui::TableHeader(week_title[i]);
-        }
+        render_header(header_height);
 
-        // TODO: 模拟渲染 30 天, 应该是实际的月份对应天数
-        auto day = 1;
-        auto max_day = 30;
+        int32_t day = 1;
+        int32_t _w_idx =
+            get_first_week_day(date.year, date.month) - 1;
+        // 每一轮渲染一行
+        auto max_day = get_days_in_month(date.year, date.month);
         while (day <= max_day)
         {
             ImGui::TableNextRow(
                 ImGuiTableRowFlags_None, cell_height
             );
-            auto tmp_day = day;
-            for (int i = 0; i < 7 && day <= max_day; ++i, ++day)
+            if (day == 1)
             {
-                ImGui::TableNextColumn();
-
-                // 设置当前行的高度
-                float start_y = ImGui::GetCursorPosY();
-
-                draw_day_text(day);
-                draw_day_event(day);
-
-                // 确保每个方格有最小高度（填充剩余空间）
-
-                auto t_column_idx = ImGui::TableGetColumnIndex();
-                ImRect t_cell_rect = ImGui::TableGetCellBgRect(
-                    ImGui::GetCurrentTable(), t_column_idx
-                );
-
-                float current_y = ImGui::GetCursorPosY();
-                if (current_y - start_y < cell_height)
+                for (size_t i = 0; i < _w_idx; ++i)
                 {
-                    ImGui::Dummy(ImVec2(
-                        0, cell_height - (current_y - start_y)
-                    ));
+                    render_cell(-1, 0, 0, 0);
                 }
+            }
 
-                // highlight
-                ImRect cell_rect = ImGui::TableGetCellBgRect(
-                    ImGui::GetCurrentTable(), i
-                );
+            while (day <= max_day)
+            {
+                render_cell(day, date.day, _w_idx, cell_height);
+                ++day;
+                _w_idx = (_w_idx + 1) % 7;
 
-                // 检查鼠标是否在刚才获取的单元格矩形内
-                if (ImGui::IsMouseHoveringRect(
-                        cell_rect.Min, cell_rect.Max
-                    ))
-                {
-                    spdlog::debug("mouse in the day {}", day);
-                    ImU32 hover_color =
-                        IM_COL32(128, 128, 128, 50);
-
-                    // 在最上层绘制一个覆盖整个单元格的矩形
-                    ImGui::GetWindowDrawList()->AddRectFilled(
-                        cell_rect.Min, cell_rect.Max, hover_color
-                    );
-                }
+                // 一行渲染一周
+                if (_w_idx == 0)
+                    break;
             }  // render row loop
 
         }  // while (day <= 30)
@@ -225,3 +328,5 @@ CalendarWindow::update(ImGuiID dock_node_id)
 
     return true;
 }
+
+}  // namespace ui::calendar
