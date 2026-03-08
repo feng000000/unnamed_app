@@ -93,6 +93,7 @@ add_library(proj_source
     # "src/ui/window.cpp"
     "src/ui/note.cpp"
     "src/ui/calendar.cpp"
+    "src/ui/secrets.cpp"
 
     "src/core/core_loop.cpp"
 

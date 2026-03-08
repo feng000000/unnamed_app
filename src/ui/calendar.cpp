@@ -9,12 +9,12 @@
 #include "spdlog/spdlog.h"
 
 #include "ui/calendar.h"
-#include "ui/window.h"
+#include "ui/window_base.h"
 #include "ui/manager.h"
 
 namespace ui::calendar
 {
-static std::mutex now_mtx;
+static std::mutex now_date_mtx;
 static DateTime NOW;
 
 void
@@ -35,7 +35,18 @@ update_now_datetime()
     localtime_r(&now, &local_tm);
 #endif
 
-    std::lock_guard<std::mutex> lock(now_mtx);
+    // 计算当月1号是星期几
+    uint8_t first_mday_week;
+    {
+        struct tm tm_info = {};
+        tm_info.tm_year = local_tm.tm_year;
+        tm_info.tm_mon = local_tm.tm_mon;
+        tm_info.tm_mday = 1;
+        mktime(&tm_info);
+        first_mday_week = tm_info.tm_wday;
+    }
+
+    std::lock_guard<std::mutex> lock(now_date_mtx);
     NOW = DateTime{
         .timestamp_s = now,
         .year = static_cast<uint16_t>(1900 + local_tm.tm_year),
@@ -43,6 +54,8 @@ update_now_datetime()
         .day = static_cast<uint8_t>(local_tm.tm_mday),
         .week =
             static_cast<uint8_t>((local_tm.tm_wday + 6) % 7 + 1),
+        .first_mday_week =
+            static_cast<uint8_t>((first_mday_week + 6) % 7 + 1),
         .hour = static_cast<uint8_t>(local_tm.tm_hour),
         .minute = static_cast<uint8_t>(local_tm.tm_min),
         .second = static_cast<uint8_t>(local_tm.tm_sec),
@@ -53,7 +66,7 @@ update_now_datetime()
 DateTime
 get_now_datetime()
 {
-    std::lock_guard<std::mutex> lock(now_mtx);
+    std::lock_guard<std::mutex> lock(now_date_mtx);
     return NOW;
 }
 
@@ -70,49 +83,9 @@ get_days_in_month(int year, int month)
     return days_in_month[month - 1];
 }
 
-// 获取当前月份第一天是周几 (1-7, start at Monday)
-inline int
-get_first_week_day(int year, int month)
-{
-    struct tm tm_info = {};
-    tm_info.tm_year = year - 1900;
-    tm_info.tm_mon = month - 1;
-    tm_info.tm_mday = 1;
-    mktime(&tm_info);
-
-    return (tm_info.tm_wday + 6) % 7 + 1;
-}
-
 CalendarWindow::CalendarWindow(const char* name, bool showing)
     : Window(name, showing)
 {
-}
-
-inline void
-set_dock_layout(const char* name, ImGuiID dockspace_id)
-{
-    spdlog::debug("adjust dock layout");
-
-    ImGui::DockBuilderRemoveNode(dockspace_id);
-    ImGui::DockBuilderAddNode(
-        dockspace_id, ImGuiDockNodeFlags_DockSpace
-    );
-    ImGui::DockBuilderSetNodeSize(
-        dockspace_id, ImGui::GetMainViewport()->Size
-    );
-
-    // ImGuiID dock_id = ImGui::DockBuilderSplitNode(
-    //     dockspace_id, ImGuiDir_Right, 0.5f, nullptr, nullptr
-    // );
-    ImGuiID dock_id = dockspace_id;
-
-    ImGuiDockNode* node = ImGui::DockBuilderGetNode(dock_id);
-    node->LocalFlags |= ImGuiDockNodeFlags_NoTabBar;
-
-    ImGui::DockBuilderDockWindow(name, dock_id);
-
-    // 4. 完成构建
-    ImGui::DockBuilderFinish(dockspace_id);
 }
 
 void
@@ -260,10 +233,7 @@ CalendarWindow::update(ImGuiID dock_node_id)
         return true;
 
     if (ui::FIRST_TIME)
-    {
-        set_dock_layout(name, dock_node_id);
         update_now_datetime();
-    }
 
     auto date = get_now_datetime();
 
@@ -290,8 +260,7 @@ CalendarWindow::update(ImGuiID dock_node_id)
         render_header(header_height);
 
         int32_t day = 1;
-        int32_t _w_idx =
-            get_first_week_day(date.year, date.month) - 1;
+        int32_t _w_idx = date.first_mday_week - 1;
         // 每一轮渲染一行
         auto max_day = get_days_in_month(date.year, date.month);
         while (day <= max_day)
@@ -300,12 +269,8 @@ CalendarWindow::update(ImGuiID dock_node_id)
                 ImGuiTableRowFlags_None, cell_height
             );
             if (day == 1)
-            {
                 for (size_t i = 0; i < _w_idx; ++i)
-                {
                     render_cell(-1, 0, 0, 0);
-                }
-            }
 
             while (day <= max_day)
             {

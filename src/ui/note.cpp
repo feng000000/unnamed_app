@@ -4,7 +4,6 @@
 #include <utility>
 
 #include "imgui.h"
-#include "imgui_internal.h"
 #include "spdlog/spdlog.h"
 
 #include "ui/manager.h"
@@ -13,33 +12,6 @@
 
 using namespace ui::note;
 using namespace ui::utils;
-
-inline void
-set_dock_layout(const char* name, ImGuiID dockspace_id)
-{
-    spdlog::debug("adjust dock layout");
-
-    ImGui::DockBuilderRemoveNode(dockspace_id);
-    ImGui::DockBuilderAddNode(
-        dockspace_id, ImGuiDockNodeFlags_DockSpace
-    );
-    ImGui::DockBuilderSetNodeSize(
-        dockspace_id, ImGui::GetMainViewport()->Size
-    );
-
-    // ImGuiID dock_id = ImGui::DockBuilderSplitNode(
-    //     dockspace_id, ImGuiDir_Right, 0.5f, nullptr, nullptr
-    // );
-    ImGuiID dock_id = dockspace_id;
-
-    ImGuiDockNode* node = ImGui::DockBuilderGetNode(dock_id);
-    node->LocalFlags |= ImGuiDockNodeFlags_NoTabBar;
-
-    ImGui::DockBuilderDockWindow(name, dock_id);
-
-    // 4. 完成构建
-    ImGui::DockBuilderFinish(dockspace_id);
-}
 
 NoteContent::NoteContent(std::string data, ImGuiItemFlags flags)
 {
@@ -146,7 +118,6 @@ NoteWindow::update(ImGuiID dock_node_id)
 
     if (ui::FIRST_TIME)
     {
-        set_dock_layout(name, dock_node_id);
     }
 
     if (ImGui::Begin(name, &(this->showing), flags))

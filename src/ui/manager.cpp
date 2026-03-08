@@ -9,44 +9,49 @@
 #include "spdlog/spdlog.h"
 
 #include "ui/manager.h"
-#include "ui/window.h"
-#include "ui/note.h"
+#include "ui/window_base.h"
 #include "ui/calendar.h"
 #include "core/core_loop.h"
 #include "utils/context.hpp"
 
 inline void
-set_dock_layout(ImGuiID dockspace_id)
+set_dock_layout(const char* name, ImGuiID dock_id)
 {
     std::cout << "adjust dock layout" << std::endl;
 
-    ImGui::DockBuilderRemoveNode(dockspace_id);
+    ImGui::DockBuilderRemoveNode(dock_id);
     ImGui::DockBuilderAddNode(
-        dockspace_id, ImGuiDockNodeFlags_DockSpace
+        dock_id, ImGuiDockNodeFlags_DockSpace
     );
     ImGui::DockBuilderSetNodeSize(
-        dockspace_id, ImGui::GetMainViewport()->Size
+        dock_id, ImGui::GetMainViewport()->Size
     );
-    ImGuiID dock_id_left, dock_id_right;
 
-    ImGui::DockBuilderSplitNode(
-        dockspace_id,
-        ImGuiDir_Left,
-        0.5f,
-        &dock_id_left,
-        &dock_id_right
-    );
-    std::cout << "left id: " << dock_id_left << std::endl
-              << "right id: " << dock_id_right << std::endl;
+    // 左右拆分窗口
+    // ImGuiID dock_id_left, dock_id_right;
+    // ImGui::DockBuilderSplitNode(
+    //     dockspace_id,
+    //     ImGuiDir_Left,
+    //     0.5f,
+    //     &dock_id_left,
+    //     &dock_id_right
+    // );
+    // std::cout << "left id: " << dock_id_left << std::endl
+    //           << "right id: " << dock_id_right << std::endl;
+    // // 3. 关键：指定 "main window" 停靠在右侧区域
+    // ImGui::DockBuilderDockWindow("placeholder", dock_id_left);
+    // ImGui::DockBuilderDockWindow(
+    //     ui::MAIN_WINDOW_NAME, dock_id_right
+    // );
 
-    // 3. 关键：指定 "main window" 停靠在右侧区域
-    ImGui::DockBuilderDockWindow("placeholder", dock_id_left);
-    ImGui::DockBuilderDockWindow(
-        ui::MAIN_WINDOW_NAME, dock_id_right
-    );
+    // 去除 dock node 的tab bar(类似下拉菜单) 作为纯窗口界面管理
+    ImGuiDockNode* node = ImGui::DockBuilderGetNode(dock_id);
+    node->LocalFlags |= ImGuiDockNodeFlags_NoTabBar;
+
+    ImGui::DockBuilderDockWindow(name, dock_id);
 
     // 4. 完成构建
-    ImGui::DockBuilderFinish(dockspace_id);
+    ImGui::DockBuilderFinish(dock_id);
 }
 
 // TODO: submission_dockspace: remove unnecessary code
@@ -313,7 +318,14 @@ ui::render()
     );
 
     for (auto& window : ui::window_list)
+    {
+        if (ui::FIRST_TIME)
+        {
+            spdlog::debug("update window {}", window->name);
+            set_dock_layout(window->name, dockspace_id);
+        }
         window->update(dockspace_id);
+    }
 
     ui::FIRST_TIME = false;
 }

@@ -1,10 +1,10 @@
-#ifndef __UI_MAIN_WINDOW_H__
-#define __UI_MAIN_WINDOW_H__
+#ifndef __UI_WINDOW_MANAGER_H__
+#define __UI_WINDOW_MANAGER_H__
 
 #include <vector>
 #include <memory>
 
-#include "ui/window.h"
+#include "ui/window_base.h"
 #include "utils/context.hpp"
 
 namespace ui
