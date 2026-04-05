@@ -10,12 +10,9 @@
 namespace ui
 {
 inline bool FIRST_TIME = true;
-inline constexpr const char* DOCK_SPACE_WINDOW_NAME =
-    "Dock Space Window";
-inline constexpr const char* DOCK_SPACE_NAME = "Dock Space";
 inline constexpr const char* MAIN_WINDOW_NAME = "Main Window";
 
-inline std::vector<std::unique_ptr<Window>> window_list;
+inline std::vector<std::unique_ptr<WindowBase>> window_list;
 
 
 utils::ctx::Context get_context();

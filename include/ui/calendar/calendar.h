@@ -1,10 +1,11 @@
 #ifndef __UI_CALENDAR_H__
 #define __UI_CALENDAR_H__
 
-#include "imgui.h"
-#include "ui/window_base.h"
 #include <cstdint>
 #include <ctime>
+
+#include "imgui.h"
+#include "ui/window_base.h"
 
 namespace ui::calendar
 {
@@ -40,7 +41,7 @@ class Event
     DateTime datetime;
 };
 
-class CalendarWindow : public Window
+class CalendarWindow : public ui::WindowBase
 {
 public:
     CalendarWindow(const char* name, bool showing);

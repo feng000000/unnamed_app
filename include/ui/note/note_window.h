@@ -8,7 +8,7 @@
 namespace ui::note
 {
 // the window that render the content node tree
-class NoteWindow : public Window
+class NoteWindow : public WindowBase
 {
 public:
     NoteWindow(

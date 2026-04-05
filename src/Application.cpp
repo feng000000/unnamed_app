@@ -46,7 +46,7 @@
 static VkDebugReportCallbackEXT g_DebugReport = VK_NULL_HANDLE;
 #endif
 
-#include "ui/manager.h"
+#include "ui/ui.h"
 
 // Data
 static VkAllocationCallbacks* g_Allocator = nullptr;

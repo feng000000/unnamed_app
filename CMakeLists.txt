@@ -10,6 +10,7 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib")
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib")
 
 set(CMAKE_CXX_STANDARD 20)
+# DEBUG: set app name
 set(PROJECT_NAME myapp)
 project(${PROJECT_NAME} C CXX)
 
@@ -31,6 +32,7 @@ target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_20)
 add_library(project_headers INTERFACE)
 target_include_directories(project_headers INTERFACE
 ${CMAKE_CURRENT_SOURCE_DIR}/include
+${CMAKE_CURRENT_SOURCE_DIR}/vendored/SDL/include
 )
 target_link_libraries(${PROJECT_NAME} PRIVATE project_headers)
 # Project Headers <<<<<<<<<<<<<<<<
@@ -64,7 +66,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE SDL3::SDL3)
 # SDL3 <<<<<<<<<<<<<<<<
 
 
-# >>>>>>>>>>>>>>>> ImGui (depnds SDL3)
+# >>>>>>>>>>>>>>>> ImGui (depends SDL3)
 add_library(imgui STATIC
 # add_library(imgui SHARED
     vendored/imgui/imgui.cpp
@@ -87,13 +89,16 @@ target_link_libraries(${PROJECT_NAME} PRIVATE imgui Vulkan::Vulkan)
 
 
 
-# >>>>>>>>>>>>>>>> Project Source (depnds ImGui)
+# >>>>>>>>>>>>>>>> Project Source (depends ImGui)
 add_library(proj_source
-    "src/ui/manager.cpp"
-    # "src/ui/window.cpp"
-    "src/ui/note.cpp"
-    "src/ui/calendar.cpp"
-    "src/ui/secrets.cpp"
+    "src/ui/calendar/calendar.cpp"
+
+    "src/ui/dock/dock_operation.cpp"
+
+    "src/ui/note/note_content.cpp"
+    "src/ui/note/note_window.cpp"
+
+    "src/ui/render.cpp"
 
     "src/core/core_loop.cpp"
 

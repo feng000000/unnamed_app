@@ -3,7 +3,7 @@
 #include <atomic>
 #include <unistd.h>
 
-#include "ui/calendar.h"
+#include "ui/ui.h"
 
 std::atomic<bool> is_running{true};
 

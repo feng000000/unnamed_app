@@ -1,16 +1,15 @@
-#include <cstddef>
 #include <cstdint>
 #include <mutex>
 #include <string>
 #include <ctime>
+#include <vulkan/vulkan_core.h>
 
 #include "imgui.h"
 #include "imgui_internal.h"
 #include "spdlog/spdlog.h"
 
-#include "ui/calendar.h"
-#include "ui/window_base.h"
-#include "ui/manager.h"
+#include "ui/ui.h"
+
 
 namespace ui::calendar
 {
@@ -68,6 +67,29 @@ get_now_datetime()
 {
     std::lock_guard<std::mutex> lock(now_date_mtx);
     return NOW;
+
+    // DEBUG: 1号周一
+    // return DateTime{
+    //     .year=2025,
+    //     .month=12,
+    //     .day=1,
+    //     .week=1,
+    //     .first_mday_week=1,
+    //     .hour=0,
+    //     .minute=0,
+    //     .second=0,
+    // };
+    // DEBUG: 31号周日
+    // return DateTime{
+    //     .year=2026,
+    //     .month=5,
+    //     .day=31,
+    //     .week=7,
+    //     .first_mday_week=1,
+    //     .hour=0,
+    //     .minute=0,
+    //     .second=0,
+    // };
 }
 
 // 获取当前年月份的天数
@@ -84,7 +106,7 @@ get_days_in_month(int year, int month)
 }
 
 CalendarWindow::CalendarWindow(const char* name, bool showing)
-    : Window(name, showing)
+    : ui::WindowBase(name, showing)
 {
 }
 
@@ -106,9 +128,13 @@ draw_day_text(int day, int today)
 
     ImVec2 text_size = ImGui::CalcTextSize(day_text.c_str());
 
+    float fontSize = ImGui::GetFontSize();
+    spdlog::debug("font size: {}", fontSize);
     float radius =
-        (std::max(text_size.x, text_size.y) / 2.0f) + 4;
-    ImVec2 center = ImVec2(pos.x + 8, pos.y + 6);
+    (std::max(text_size.x, text_size.y) / 2.0f) + 0.1 * fontSize;
+    spdlog::debug("radius: {}", radius);
+
+    ImVec2 center = ImVec2(pos.x + text_size.x / 2 + 2, pos.y + text_size.y / 2 + 2);
 
     // draw red circle
     ImDrawList* draw_list = ImGui::GetWindowDrawList();
@@ -140,7 +166,8 @@ draw_day_text(int day, int today)
 void
 draw_day_event(int day)
 {
-    spdlog::error("draw_day_event is not implemented yet");
+    // DEBUG: draw_day_event is not implemented yet
+    // spdlog::error("draw_day_event is not implemented yet");
     // --- 在方格内显示多行标题 ---
     // // 模拟该日期下的多个事件
     // static std::vector<std::pair<const char*, ImVec4>>
@@ -176,8 +203,8 @@ render_header(float height)
     for (int i = 0; i < 7; i++)
     {
         ImGui::TableNextColumn();
-        ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 6.0f);
-        ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 8.0f);
+        // ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 6.0f);
+        // ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 8.0f);
         ImGui::TableHeader(CalendarWindow::week_title[i]);
     }
 }
@@ -205,7 +232,7 @@ render_cell(int day, int today, int col_idx, float cell_height)
 
     if (day <= 0)
     {
-        spdlog::debug("skip render cell");
+        // spdlog::debug("skip render cell");
         return;
     }
 
@@ -238,6 +265,8 @@ CalendarWindow::update(ImGuiID dock_node_id)
     auto date = get_now_datetime();
 
     ImGui::Begin(name);
+
+    ImGui::DockSpace(dock_node_id, ImVec2(0, 0), this->flags);
     ImGui::PushStyleVar(ImGuiStyleVar_CellPadding, ImVec2(0, 0));
 
     // 设置 Table：7列，带边框
@@ -245,7 +274,9 @@ CalendarWindow::update(ImGuiID dock_node_id)
             "CalendarTable", 7, ImGuiTableFlags_Borders
         ))
     {
-        float header_height = 25.0f;
+
+        // float header_height = 25.0f;
+        float header_height = ImGui::GetFontSize();
         // ImVec2 avail_size = ImGui::GetContentRegionAvail();
         ImVec2 avail_size_max =
             ImGui::GetWindowContentRegionMax();

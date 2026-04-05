@@ -7,19 +7,19 @@ namespace ui
 {
 
 
-class Window
+class WindowBase
 {
 public:
     const char* name;
     ImGuiID id = -1;
     ImGuiWindowFlags flags = ImGuiWindowFlags_NoTitleBar;
 
-    Window(const char* name, bool showing)
+    WindowBase(const char* name, bool showing)
         : name(name), showing(showing)
     {
     }
 
-    virtual ~Window() = default;
+    virtual ~WindowBase() = default;
 
     virtual bool update(ImGuiID dock_node_id) = 0;
 
