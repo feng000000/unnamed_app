@@ -266,7 +266,7 @@ CalendarWindow::update(ImGuiID dock_node_id)
 
     ImGui::Begin(name);
 
-    ImGui::DockSpace(dock_node_id, ImVec2(0, 0), this->flags);
+    // ImGui::DockSpace(dock_node_id, ImVec2(0, 0), this->flags);
     ImGui::PushStyleVar(ImGuiStyleVar_CellPadding, ImVec2(0, 0));
 
     // 设置 Table：7列，带边框

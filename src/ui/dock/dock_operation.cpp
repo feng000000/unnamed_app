@@ -14,8 +14,7 @@ ui::dock::submission_dockspace()
 {
     static bool opt_fullscreen = true;
     static bool opt_padding = false;
-    static ImGuiDockNodeFlags dockspace_flags =
-        ImGuiDockNodeFlags_None;
+    static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_NoTabBar;
     ImGuiID dockspace_id = ImGui::GetID(DOCK_SPACE_NAME);
 
     // We are using the ImGuiWindowFlags_NoDocking flag to make
@@ -31,13 +30,12 @@ ui::dock::submission_dockspace()
         ImGui::SetNextWindowViewport(viewport->ID);
         ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
         ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-        window_flags |=
-            ImGuiWindowFlags_NoCollapse |
-            // window_flags |= ImGuiWindowFlags_NoTitleBar |
-            //                 ImGuiWindowFlags_NoCollapse |
-            ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
-            ImGuiWindowFlags_NoBringToFrontOnFocus |
-            ImGuiWindowFlags_NoNavFocus;
+        window_flags |= ImGuiWindowFlags_NoTitleBar |
+                        ImGuiWindowFlags_NoCollapse |
+                        ImGuiWindowFlags_NoResize |
+                        ImGuiWindowFlags_NoMove |
+                        ImGuiWindowFlags_NoBringToFrontOnFocus |
+                        ImGuiWindowFlags_NoNavFocus;
     }
     else
     {
@@ -89,7 +87,9 @@ ui::dock::submission_dockspace()
 }
 
 void
-ui::dock::set_dock_layout(const char* window_name, ImGuiID dock_id)
+ui::dock::set_dock_layout(
+    const char* window_name, ImGuiID dock_id
+)
 {
     spdlog::debug("adjust dock layout");
 
@@ -102,7 +102,8 @@ ui::dock::set_dock_layout(const char* window_name, ImGuiID dock_id)
         dock_id, ImGui::GetMainViewport()->Size
     );
 
-    // ui::dock::split(dock_id, window_name, ImGuiDir::ImGuiDir_Left);
+    // ui::dock::split(dock_id, window_name,
+    // ImGuiDir::ImGuiDir_Left);
 
     // 去除 dock node 的tab bar(类似下拉菜单) 作为纯窗口界面管理
     ImGuiDockNode* node = ImGui::DockBuilderGetNode(dock_id);
@@ -152,9 +153,11 @@ ui::dock::split(
     spdlog::info("[split()] new_part_id: {:X}", new_part_id);
     spdlog::info("[split()] old_part_id: {:X}", old_part_id);
 
-    // ImGui::DockBuilderDockWindow(parent_window_name, old_part_id);
-    // ImGui::DockBuilderDockWindow(parent_window_name, new_part_id);
-    // ImGui::DockBuilderDockWindow("placeholder", old_part_id);
+    // ImGui::DockBuilderDockWindow(parent_window_name,
+    // old_part_id);
+    // ImGui::DockBuilderDockWindow(parent_window_name,
+    // new_part_id); ImGui::DockBuilderDockWindow("placeholder",
+    // old_part_id);
 
     // ImGui::DockBuilderFinish(node_id);
 

@@ -70,6 +70,13 @@ ui::render()
     ImGuiWindowFlags content_window_flags =
         ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
 
+    // DEBUG: test CalendarWindow
+    ui::window_list.emplace_back(
+        std::make_unique<calendar::CalendarWindow>(
+            "calendar", true
+        )
+    );
+
     // DEBUG: test NoteWindow
     ui::window_list.emplace_back(
         std::make_unique<note::NoteWindow>(
@@ -81,12 +88,6 @@ ui::render()
         )
     );
 
-    // DEBUG: test CalendarWindow
-    ui::window_list.emplace_back(
-        std::make_unique<calendar::CalendarWindow>(
-            "calendar", true
-        )
-    );
 
     // DEBUG: test split
 
@@ -102,8 +103,8 @@ ui::render()
             // ui::window_list[0]->name,
             old_part_id,
             new_part_id,
-            ImGuiDir::ImGuiDir_Right,
-            0.8f
+            ImGuiDir::ImGuiDir_Left,
+            0.2f
         );
 
 

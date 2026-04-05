@@ -12,7 +12,7 @@ class WindowBase
 public:
     const char* name;
     ImGuiID id = -1;
-    ImGuiWindowFlags flags = ImGuiWindowFlags_NoTitleBar;
+    ImGuiWindowFlags flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse;
 
     WindowBase(const char* name, bool showing)
         : name(name), showing(showing)
