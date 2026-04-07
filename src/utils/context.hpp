@@ -11,6 +11,8 @@ namespace utils::ctx
 {
 using TaskList = std::vector<std::function<void()>>;
 
+
+// TODO: Context 设计有点烂
 class Context
 {
 public:
@@ -101,9 +103,7 @@ private:
     TaskList exit_list;
 
     void
-    execute_func_list(
-        const char* identify, TaskList& task_list
-    ) noexcept
+    execute_func_list(const char* identify, TaskList& task_list) noexcept
     {
         for (auto& func : task_list)
         {
@@ -116,9 +116,7 @@ private:
             catch (const std::exception e)
             {
                 spdlog::error(
-                    "[Context] execute {} func failed: {}",
-                    identify,
-                    e.what()
+                    "[Context] execute {} func failed: {}", identify, e.what()
                 );
             }
             catch (...)

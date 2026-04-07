@@ -23,9 +23,7 @@ ui::get_context()
             // auto log_level = spdlog::level::debug;
             auto log_level = spdlog::level::info;
             spdlog::set_level(log_level);
-            spdlog::info(
-                "log level: {}", static_cast<int>(log_level)
-            );
+            spdlog::info("log level: {}", static_cast<int>(log_level));
         }
     );
     ctx.push_enter_func(
@@ -49,48 +47,24 @@ ui::render()
     ImGui::ShowMetricsWindow();
 
     auto dockspace_id = ui::dock::submission_dockspace();
-    if (ui::FIRST_TIME)
-    {
-        // ui::dock::set_dock_layout(ui::MAIN_WINDOW_NAME,
-        // dockspace_id);
-
-        spdlog::info("dockspace_id: {:X}", dockspace_id);
-
-        // dockspace_id = ui::dock::split(
-        //     dockspace_id,
-        //     ui::MAIN_WINDOW_NAME,
-        //     ImGuiDir::ImGuiDir_Right,
-        //     0.8f
-        // );
-        // spdlog::info("dockspace_id after split: {}", dockspace_id);
-    }
 
     window_list = std::vector<std::unique_ptr<WindowBase>>();
 
-    ImGuiWindowFlags content_window_flags =
-        ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
-
     // DEBUG: test CalendarWindow
     ui::window_list.emplace_back(
-        std::make_unique<calendar::CalendarWindow>(
-            "calendar", true
-        )
+        std::make_unique<calendar::CalendarWindow>("calendar", true)
     );
 
     // DEBUG: test NoteWindow
-    ui::window_list.emplace_back(
-        std::make_unique<note::NoteWindow>(
-            "note",
-            true,
-            std::make_shared<note::NoteContent>(
-                "data", content_window_flags
-            )
+    ui::window_list.emplace_back(std::make_unique<note::NoteWindow>(
+        "note",
+        true,
+        std::make_shared<note::NoteContent>(
+            "data", ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking
         )
-    );
-
+    ));
 
     // DEBUG: test split
-
     static ImGuiID new_part_id = 0, old_part_id = 0;
     if (ui::FIRST_TIME)
     {
@@ -106,7 +80,6 @@ ui::render()
             ImGuiDir::ImGuiDir_Left,
             0.2f
         );
-
 
         spdlog::info("mount {} to {:X}", ui::window_list[0]->name, old_part_id);
         ImGui::DockBuilderDockWindow(ui::window_list[0]->name, old_part_id);
@@ -133,14 +106,15 @@ ui::render()
     //     //         ImGuiDir::ImGuiDir_Right,
     //     //         0.8f
     //     //     );
-    //     //     // ui::dock::set_dock_layout(window->name, dockspace_id);
-    //     //     // ui::dock::set_dock_layout(window->name, window_dock_id);
+    //     //     // ui::dock::set_dock_layout(window->name,
+    //     dockspace_id);
+    //     //     // ui::dock::set_dock_layout(window->name,
+    //     window_dock_id);
     //     //     ImGui::DockBuilderFinish(dockspace_id);
     //     // }
 
     //     window->update(0);
     // }
-
 
     ui::FIRST_TIME = false;
 }

@@ -86,34 +86,6 @@ ui::dock::submission_dockspace()
     return dockspace_id;
 }
 
-void
-ui::dock::set_dock_layout(
-    const char* window_name, ImGuiID dock_id
-)
-{
-    spdlog::debug("adjust dock layout");
-
-    // ImGui::DockBuilderRemoveNode(dock_id);
-
-    ImGui::DockBuilderAddNode(
-        dock_id, ImGuiDockNodeFlags_DockSpace
-    );
-    ImGui::DockBuilderSetNodeSize(
-        dock_id, ImGui::GetMainViewport()->Size
-    );
-
-    // ui::dock::split(dock_id, window_name,
-    // ImGuiDir::ImGuiDir_Left);
-
-    // 去除 dock node 的tab bar(类似下拉菜单) 作为纯窗口界面管理
-    ImGuiDockNode* node = ImGui::DockBuilderGetNode(dock_id);
-    node->LocalFlags |= ImGuiDockNodeFlags_NoTabBar;
-
-    ImGui::DockBuilderDockWindow(window_name, dock_id);
-
-    // 4. 完成构建
-    ImGui::DockBuilderFinish(dock_id);
-}
 
 // 切分 Dock Space
 // - node_id: 待切分的 dockspace node ID
@@ -130,19 +102,6 @@ ui::dock::split(
     float new_part_ratio
 )
 {
-    // ImGui::DockBuilderRemoveNode(node_id);
-
-    // if (ImGui::DockBuilderGetNode(node_id) == nullptr)
-    // {
-    //     spdlog::info("create node: {}", node_id);
-    //     ImGui::DockBuilderAddNode(
-    //         node_id, ImGuiDockNodeFlags_DockSpace
-    //     );
-    //     ImGui::DockBuilderSetNodeSize(
-    //         node_id, ImGui::GetMainViewport()->Size
-    //     );
-    // }
-
     ImGui::DockBuilderSplitNode(
         node_id,
         new_part_direction,
@@ -152,14 +111,6 @@ ui::dock::split(
     );
     spdlog::info("[split()] new_part_id: {:X}", new_part_id);
     spdlog::info("[split()] old_part_id: {:X}", old_part_id);
-
-    // ImGui::DockBuilderDockWindow(parent_window_name,
-    // old_part_id);
-    // ImGui::DockBuilderDockWindow(parent_window_name,
-    // new_part_id); ImGui::DockBuilderDockWindow("placeholder",
-    // old_part_id);
-
-    // ImGui::DockBuilderFinish(node_id);
 
     return;
 }

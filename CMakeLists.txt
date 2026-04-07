@@ -4,7 +4,8 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 cmake_minimum_required(VERSION 3.16)
 
 # set the output directory for built objects.
-# This makes sure that the dynamic library goes into the build directory automatically.
+# This makes sure that the dynamic library goes into
+# the build directory automatically.
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib")
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib")
@@ -31,12 +32,20 @@ target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_20)
 # >>>>>>>>>>>>>>>> Project Headers
 add_library(project_headers INTERFACE)
 target_include_directories(project_headers INTERFACE
-${CMAKE_CURRENT_SOURCE_DIR}/include
-${CMAKE_CURRENT_SOURCE_DIR}/vendored/SDL/include
+${CMAKE_CURRENT_SOURCE_DIR}/src
 )
 target_link_libraries(${PROJECT_NAME} PRIVATE project_headers)
 # Project Headers <<<<<<<<<<<<<<<<
 
+
+# >>>>>>>>>>>>>>>> spdlog (Header-only)
+add_library(spdlog INTERFACE)
+target_include_directories(spdlog INTERFACE
+${CMAKE_CURRENT_SOURCE_DIR}/vendored/spdlog
+)
+# target_compile_definitions(spdlog INTERFACE SPDLOG_COMPILED_LIB)
+target_link_libraries(${PROJECT_NAME} PRIVATE spdlog)
+# >>>>>>>>>>>>>>>>
 
 # >>>>>>>>>>>>>>>> SDL3
 # - 裁剪 SDL3 模块
@@ -82,10 +91,9 @@ target_include_directories(imgui PUBLIC
     "${CMAKE_SOURCE_DIR}/vendored/imgui/backends"  # 后端头文件路径 (imgui_impl_sdl3.h)
 )
 target_link_libraries(imgui PRIVATE SDL3::SDL3 Vulkan::Vulkan)
-target_link_libraries(imgui PUBLIC project_headers)
+# target_link_libraries(imgui PUBLIC project_headers)
 target_link_libraries(${PROJECT_NAME} PRIVATE imgui Vulkan::Vulkan)
 # ImGui <<<<<<<<<<<<<<<<
-
 
 
 
@@ -98,13 +106,16 @@ add_library(proj_source
     "src/ui/note/note_content.cpp"
     "src/ui/note/note_window.cpp"
 
+    "src/ui/menu/menu.cpp"
+
     "src/ui/render.cpp"
 
     "src/core/core_loop.cpp"
 
 )
-# 链接全局头文件
+# 链接头文件
 target_link_libraries(proj_source PRIVATE imgui)
+target_link_libraries(proj_source PUBLIC spdlog)
 target_link_libraries(proj_source PUBLIC project_headers)
 target_link_libraries(${PROJECT_NAME} PRIVATE proj_source)
 # Project Source <<<<<<<<<<<<<<<<

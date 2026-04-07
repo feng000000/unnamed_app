@@ -7,5 +7,6 @@
 #include "ui/dock/dock_operation.h"   // IWYU pragma: export
 #include "ui/note/note_content.h"  // IWYU pragma: export
 #include "ui/note/note_window.h"   // IWYU pragma: export
+#include "ui/menu/menu.h"   // IWYU pragma: export
 
 #endif

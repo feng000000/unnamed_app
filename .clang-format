@@ -2,7 +2,7 @@
 Language: Cpp
 BasedOnStyle: Microsoft
 IndentWidth: 4
-ColumnLimit: 66
+ColumnLimit: 80
 # 不对头文件排序, 引入顺序会影响代码
 SortIncludes: false
 
