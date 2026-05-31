@@ -15,7 +15,7 @@ inline constexpr const char* MAIN_WINDOW_NAME = "Main Window";
 inline std::vector<std::unique_ptr<WindowBase>> window_list;
 
 
-utils::ctx::Context get_context();
+utils::ctx::Context new_app_context();
 
 void
 render();

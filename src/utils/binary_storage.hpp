@@ -7,6 +7,8 @@
 #include <vector>
 #include <vulkan/vulkan_core.h>
 
+
+// NOTICE: deprecated
 namespace utils::BinaryStorage
 {
 using byte = unsigned char;

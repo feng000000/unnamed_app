@@ -111,6 +111,7 @@ add_library(proj_source
     "src/ui/render.cpp"
 
     "src/core/core_loop.cpp"
+    "src/core/calendar/calendar_datetime.cpp"
 
 )
 # 链接头文件

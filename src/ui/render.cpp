@@ -7,21 +7,23 @@
 #include "imgui_internal.h"
 #include "spdlog/common.h"
 #include "spdlog/spdlog.h"
+#include "spdlog/cfg/env.h"
 
 #include "ui/ui.h"
 #include "core/core_loop.h"
 #include "utils/context.hpp"
 
+// TODO: 动态刷新率
 // app lifespan (RAII)
 utils::ctx::Context
-ui::get_context()
+ui::new_app_context()
 {
     utils::ctx::Context ctx("app context");
     ctx.push_enter_func(
         []()
         {
-            // auto log_level = spdlog::level::debug;
             auto log_level = spdlog::level::info;
+            spdlog::cfg::load_env_levels();
             spdlog::set_level(log_level);
             spdlog::info("log level: {}", static_cast<int>(log_level));
         }
