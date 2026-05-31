@@ -21,26 +21,25 @@ NoteWindow::update(ImGuiID dock_node_id)
     {
     }
 
-    if (ImGui::Begin(name, &(this->showing), flags))
+    if (!ImGui::Begin(name, &(this->showing), flags))
     {
-        id = ImGui::GetID("");
-
-        ImGui::Text("this is Note Window");
-
-        if (ImGui::Button("note window button"))
-            spdlog::debug("click note window button");
-
         ImGui::End();
-
-        return true;
+        return false;
     }
-    return false;
+
+    id = ImGui::GetID("");
+
+    ImGui::Text("this is Note Window");
+
+    if (ImGui::Button("note window button"))
+        spdlog::debug("click note window button");
+
+    ImGui::End();
+    return true;
 }
 
 NoteWindow::NoteWindow(
-    const char* name,
-    bool showing,
-    std::shared_ptr<NoteContent> data
+    const char* name, bool showing, std::shared_ptr<NoteContent> data
 )
     : WindowBase(name, showing), data(std::move(data))
 {

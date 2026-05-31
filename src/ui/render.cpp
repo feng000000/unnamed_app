@@ -1,4 +1,6 @@
 #include "ui/render.h"
+#include <cassert>
+#include <csignal>
 #include <memory>
 #include <vector>
 #include <thread>
@@ -31,6 +33,7 @@ ui::new_app_context()
     ctx.push_enter_func(
         []()
         {
+            spdlog::info("create core loop thread");
             std::thread core_loop_thread(core::core_loop);
             core_loop_thread.detach();
         }

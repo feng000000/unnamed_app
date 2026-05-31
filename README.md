@@ -1,3 +1,14 @@
+
+## Build
+- 正式 app
+    2. `cmake -S ./apps/myapp/ -B ./build && make -C build -j $(nproc)`
+        - make 时可以先用 `make -C build -j 4` 防止占用内存过大
+    3. (root) `./build/bin/myapp`
+- 测试 app
+    1. `mkdir -p build/ && cd build`
+    2. `cmake -S ./apps/test_app/ -B ./build && make -C build -j $(nproc)`
+    3. (root) `./build/bin/myapp`
+
 ## TODOs
 
 

@@ -10,7 +10,6 @@
 #include "ui/ui.h"
 #include "core/calendar/calendar_datetime.h"
 
-
 namespace ui::calendar
 {
 
@@ -178,60 +177,71 @@ CalendarWindow::update(ImGuiID dock_node_id)
     //     core::calendar::update_now_datetime();
 
     auto date = core::calendar::get_now_datetime();
-    if (!date){
+    if (!date)
+    {
         spdlog::info("calendar datetime not init yet");
         return false;
     }
 
-    ImGui::Begin(name);
+    if (!ImGui::Begin(name))
+    {
+        spdlog::error("create calendar window failed");
+        ImGui::End();
+        return false;
+    }
+    // ImGui::Begin(name);
 
     // ImGui::DockSpace(dock_node_id, ImVec2(0, 0), this->flags);
     ImGui::PushStyleVar(ImGuiStyleVar_CellPadding, ImVec2(0, 0));
 
     // 设置 Table：7列，带边框
-    if (ImGui::BeginTable("CalendarTable", 7, ImGuiTableFlags_Borders))
+    if (!ImGui::BeginTable("CalendarTable", 7, ImGuiTableFlags_Borders))
     {
+        spdlog::error("create calendar table failed");
+        // ImGui::EndTable();
+        ImGui::PopStyleVar();
+        ImGui::End();
+        return false;
+    }
 
-        // float header_height = 25.0f;
-        float header_height = ImGui::GetFontSize();
-        // ImVec2 avail_size = ImGui::GetContentRegionAvail();
-        ImVec2 avail_size_max = ImGui::GetWindowContentRegionMax();
-        ImVec2 avail_size_min = ImGui::GetWindowContentRegionMin();
-        float avail_height = avail_size_max.y - avail_size_min.y;
+    // float header_height = 25.0f;
+    float header_height = ImGui::GetFontSize();
+    // ImVec2 avail_size = ImGui::GetContentRegionAvail();
+    ImVec2 avail_size_max = ImGui::GetWindowContentRegionMax();
+    ImVec2 avail_size_min = ImGui::GetWindowContentRegionMin();
+    float avail_height = avail_size_max.y - avail_size_min.y;
 
-        // 高度设置为能显示五行
-        float cell_height = (avail_height - header_height - 20.0f) / 5;
+    // 高度设置为能显示五行
+    float cell_height = (avail_height - header_height - 20.0f) / 5;
 
-        render_header(header_height);
+    render_header(header_height);
 
-        int32_t day = 1;
-        int32_t _w_idx = date->first_mday_week - 1;
-        // 每一轮渲染一行
-        auto max_day = get_days_in_month(date->year, date->month);
+    int32_t day = 1;
+    int32_t _w_idx = date->first_mday_week - 1;
+    // 每一轮渲染一行
+    auto max_day = get_days_in_month(date->year, date->month);
+    while (day <= max_day)
+    {
+        ImGui::TableNextRow(ImGuiTableRowFlags_None, cell_height);
+        if (day == 1)
+            for (size_t i = 0; i < _w_idx; ++i)
+                render_cell(-1, 0, 0, 0);
+
         while (day <= max_day)
         {
-            ImGui::TableNextRow(ImGuiTableRowFlags_None, cell_height);
-            if (day == 1)
-                for (size_t i = 0; i < _w_idx; ++i)
-                    render_cell(-1, 0, 0, 0);
+            render_cell(day, date->day, _w_idx, cell_height);
+            ++day;
+            _w_idx = (_w_idx + 1) % 7;
 
-            while (day <= max_day)
-            {
-                render_cell(day, date->day, _w_idx, cell_height);
-                ++day;
-                _w_idx = (_w_idx + 1) % 7;
+            // 一行渲染一周
+            if (_w_idx == 0)
+                break;
+        }  // render row loop
 
-                // 一行渲染一周
-                if (_w_idx == 0)
-                    break;
-            }  // render row loop
+    }  // while (day <= 30)
 
-        }  // while (day <= 30)
-
-        ImGui::EndTable();
-    }
+    ImGui::EndTable();
     ImGui::PopStyleVar();
-
     ImGui::End();
 
     return true;

@@ -18,8 +18,8 @@ std::mutex now_date_mtx;
 std::optional<DateTime>
 get_now_datetime()
 {
-    if (!datetime_init) return std::nullopt;
     std::lock_guard<std::mutex> lock(now_date_mtx);
+    if (!datetime_init) return std::nullopt;
     return NOW;
 
     // DEBUG: 1号周一
@@ -96,6 +96,7 @@ update_now_datetime()
         .minute = static_cast<uint8_t>(local_tm.tm_min),
         .second = static_cast<uint8_t>(local_tm.tm_sec),
     };
+    datetime_init = true;
     lastupdate = steady_clock::now();
 }
 

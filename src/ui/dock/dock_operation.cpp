@@ -67,6 +67,7 @@ ui::dock::submission_dockspace()
     }
 
     ImGui::Begin(DOCK_SPACE_WINDOW_NAME, nullptr, window_flags);
+
     if (!opt_padding)
         ImGui::PopStyleVar();
     if (opt_fullscreen)
