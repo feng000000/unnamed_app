@@ -24,6 +24,7 @@ BreakBeforeBraces: Allman
 
 # 控制二元运算符（如 +, -, *, /, &&, ||）换行时是放在行首还是行尾
 # BreakBeforeBinaryOperators: All
+BreakBinaryOperations: OnePerLine
 
 # 括号内是否添加空格
 SpacesInParentheses: false
